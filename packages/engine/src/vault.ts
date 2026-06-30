@@ -6807,6 +6807,14 @@ function structuralLintFindings(
             });
           }
         }
+      } else {
+        findings.push({
+          severity: "warning",
+          code: "missing_page_file",
+          message: `Page ${page.title} exists in the graph but its markdown file is missing at ${absolutePath}. Re-run \`swarmvault compile\` to regenerate it.`,
+          pagePath: absolutePath,
+          relatedPageIds: [page.id]
+        });
       }
 
       return findings;

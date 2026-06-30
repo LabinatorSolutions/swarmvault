@@ -287,6 +287,8 @@ export interface ProviderAdapter {
   readonly type: ProviderType;
   readonly model: string;
   readonly capabilities: Set<ProviderCapability>;
+  /** Default `maxOutputTokens` applied when a request does not set one. */
+  maxOutputTokensDefault?: number;
   generateText(request: GenerationRequest): Promise<GenerationResponse>;
   generateStructured<T>(request: GenerationRequest, schema: z.ZodType<T>): Promise<T>;
   embedTexts?(texts: string[]): Promise<number[][]>;
@@ -311,6 +313,13 @@ export interface ProviderConfig {
   extraArgs?: string[];
   /** local-whisper: thread count passed as `-t`. */
   threads?: number;
+  /**
+   * Maximum number of output tokens requested from the model per call.
+   * Raise this when structured-analysis calls fail and silently fall back to
+   * the heuristic path because the model truncated its JSON response.
+   * Defaults to a generous internal value when unset.
+   */
+  maxOutputTokens?: number;
 }
 
 export interface WebSearchProviderConfig {

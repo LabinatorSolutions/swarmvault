@@ -37,7 +37,7 @@ export class AnthropicProviderAdapter extends BaseProviderAdapter {
       },
       body: JSON.stringify({
         model: this.model,
-        max_tokens: request.maxOutputTokens ?? 1200,
+        max_tokens: request.maxOutputTokens ?? this.maxOutputTokensDefault,
         system: request.system,
         messages: [
           {

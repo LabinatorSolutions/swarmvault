@@ -163,8 +163,13 @@ export class OpenAiCompatibleProviderAdapter extends BaseProviderAdapter {
   }
 
   public async generateStructured<T>(request: GenerationRequest, schema: z.ZodType<T>): Promise<T> {
+    const normalizedRequest: GenerationRequest = {
+      ...request,
+      maxOutputTokens: request.maxOutputTokens ?? this.maxOutputTokensDefault
+    };
+
     if (this.type !== "openai") {
-      return super.generateStructured(request, schema);
+      return super.generateStructured(normalizedRequest, schema);
     }
 
     const structuredFormat = buildStructuredFormat(schema);
@@ -172,13 +177,13 @@ export class OpenAiCompatibleProviderAdapter extends BaseProviderAdapter {
       this.apiStyle === "chat"
         ? await this.generateStructuredViaChatCompletions(
             {
-              ...request
+              ...normalizedRequest
             },
             structuredFormat
           )
         : await this.generateStructuredViaResponses(
             {
-              ...request
+              ...normalizedRequest
             },
             structuredFormat
           );

@@ -31,7 +31,8 @@ const providerConfigSchema = z.object({
   binaryPath: z.string().min(1).optional(),
   modelPath: z.string().min(1).optional(),
   extraArgs: z.array(z.string()).optional(),
-  threads: z.number().int().positive().optional()
+  threads: z.number().int().positive().optional(),
+  maxOutputTokens: z.number().int().positive().optional()
 });
 
 const sourceClassSchema = z.enum(["first_party", "third_party", "resource", "generated"]);

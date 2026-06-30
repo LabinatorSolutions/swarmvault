@@ -45,6 +45,14 @@ function createOpenAiCompatiblePreset(
 }
 
 export async function createProvider(id: string, config: ProviderConfig, rootDir: string): Promise<ProviderAdapter> {
+  const adapter = await instantiateProvider(id, config, rootDir);
+  if (config.maxOutputTokens !== undefined) {
+    adapter.maxOutputTokensDefault = config.maxOutputTokens;
+  }
+  return adapter;
+}
+
+async function instantiateProvider(id: string, config: ProviderConfig, rootDir: string): Promise<ProviderAdapter> {
   switch (config.type) {
     case "heuristic":
       return new HeuristicProviderAdapter(id, config.model);

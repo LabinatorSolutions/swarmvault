@@ -4009,6 +4009,19 @@ program.parseAsync(process.argv).catch((error: unknown) => {
     emitJson({ error: message });
   } else {
     process.stderr.write(`${message}\n`);
+    if (process.env.SWARMVAULT_DEBUG) {
+      // Full stack plus the underlying `cause` chain, so a bare "some error"
+      // message can be traced to its real origin during debugging.
+      let current: unknown = error;
+      let prefix = "";
+      while (current instanceof Error) {
+        process.stderr.write(`${prefix}${current.stack ?? current.message}\n`);
+        prefix = "Caused by: ";
+        current = (current as { cause?: unknown }).cause;
+      }
+    } else {
+      process.stderr.write("Re-run with SWARMVAULT_DEBUG=1 for a full stack trace.\n");
+    }
   }
   process.exit(1);
 });

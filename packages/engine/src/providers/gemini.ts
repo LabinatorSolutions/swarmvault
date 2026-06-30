@@ -38,7 +38,7 @@ export class GeminiProviderAdapter extends BaseProviderAdapter {
           }
         ],
         generationConfig: {
-          maxOutputTokens: request.maxOutputTokens ?? 1200
+          maxOutputTokens: request.maxOutputTokens ?? this.maxOutputTokensDefault
         }
       })
     });

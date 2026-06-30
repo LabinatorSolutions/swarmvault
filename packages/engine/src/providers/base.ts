@@ -14,8 +14,17 @@ import type {
 } from "../types.js";
 import { extractJson } from "../utils.js";
 
+/**
+ * Generous default cap on model output tokens. Structured-analysis calls emit
+ * full JSON documents, so a small cap (the previous hardcoded 1200) caused the
+ * model to truncate and the call to fall back to the heuristic path. Providers
+ * use this unless a request or `swarmvault.config.json` overrides it.
+ */
+export const DEFAULT_MAX_OUTPUT_TOKENS = 4096;
+
 export abstract class BaseProviderAdapter implements ProviderAdapter {
   public readonly capabilities: Set<ProviderCapability>;
+  public maxOutputTokensDefault: number = DEFAULT_MAX_OUTPUT_TOKENS;
 
   public constructor(
     public readonly id: string,
@@ -44,6 +53,7 @@ export abstract class BaseProviderAdapter implements ProviderAdapter {
     const schemaDescription = JSON.stringify(z.toJSONSchema(schema), null, 2);
     const response = await this.generateText({
       ...request,
+      maxOutputTokens: request.maxOutputTokens ?? this.maxOutputTokensDefault,
       prompt: `${request.prompt}\n\nReturn JSON only. Follow this JSON Schema exactly:\n${schemaDescription}`
     });
     const parsed = JSON.parse(extractJson(response.text));

@@ -76,7 +76,16 @@ async function loadContextPages(rootDir: string, graph: GraphArtifact): Promise<
   return Promise.all(
     contextPages.slice(0, 18).map(async (page) => {
       const absolutePath = path.join(paths.wikiDir, page.path);
-      const raw = await fs.readFile(absolutePath, "utf8").catch(() => "");
+      const raw = await fs.readFile(absolutePath, "utf8").catch((error: unknown) => {
+        // Surface why a graph page could not be read for contradiction checks
+        // instead of silently treating it as empty (the source of the confusing
+        // "couldn't access file" reports where the file appears to be present).
+        const message = error instanceof Error ? error.message : String(error);
+        process.stderr.write(
+          `[swarmvault] Warning: could not read page ${page.path} for deep-lint contradiction checks; treating as empty. ${message}\n`
+        );
+        return "";
+      });
       const parsed = matter(raw);
       return {
         id: page.id,

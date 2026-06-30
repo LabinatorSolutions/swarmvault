@@ -491,6 +491,21 @@ async function providerAnalysisChunk(
   };
 }
 
+/**
+ * Surface why a source dropped from provider analysis to the heuristic path.
+ * Without this, compile silently degrades (e.g. when the model truncates its
+ * JSON because `maxOutputTokens` is too small) and the user has no clue why
+ * results are weaker or why the run is slow. Written to stderr so `--json`
+ * stdout stays clean.
+ */
+function warnHeuristicFallback(provider: ProviderAdapter, manifest: SourceManifest, error: unknown): void {
+  const message = error instanceof Error ? error.message : String(error);
+  process.stderr.write(
+    `[swarmvault] Warning: provider "${provider.id}" analysis failed for ${manifest.sourceId}; ` +
+      `falling back to heuristic extraction. ${message}\n`
+  );
+}
+
 async function providerAnalysis(
   manifest: SourceManifest,
   text: string,
@@ -506,7 +521,8 @@ async function providerAnalysis(
   for (const chunk of chunks) {
     try {
       analyses.push(await providerAnalysisChunk(manifest, chunk.text, provider, schema, chunk));
-    } catch {
+    } catch (error) {
+      warnHeuristicFallback(provider, manifest, error);
       analyses.push(heuristicAnalysis(manifest, chunk.text, schema.hash));
     }
   }
@@ -620,7 +636,8 @@ export async function analyzeSource(
     } else {
       try {
         analysis = await providerAnalysis(manifest, content, provider, schema);
-      } catch {
+      } catch (error) {
+        warnHeuristicFallback(provider, manifest, error);
         analysis = heuristicAnalysis(manifest, content, schema.hash);
       }
     }
@@ -647,7 +664,8 @@ export async function analyzeSource(
   } else {
     try {
       analysis = await providerAnalysis(manifest, content, provider, schema);
-    } catch {
+    } catch (error) {
+      warnHeuristicFallback(provider, manifest, error);
       analysis = heuristicAnalysis(manifest, content, schema.hash);
     }
   }
