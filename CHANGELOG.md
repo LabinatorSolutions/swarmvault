@@ -2,6 +2,14 @@
 
 ## Unreleased
 
+## 3.21.0
+
+- Made the model output-token limit configurable per provider via `providers.<id>.maxOutputTokens` in `swarmvault.config.json`, and raised the built-in default from 1200 to 4096. The previous low cap caused structured-analysis calls to truncate their JSON and silently fall back to heuristic extraction on long sources.
+- Surfaced compile diagnostics that were previously swallowed: a stderr warning now reports the underlying error whenever a source drops from provider analysis to heuristic extraction, so degraded or slow runs are explainable instead of silent.
+- Improved lint visibility: deep-lint now warns (instead of silently treating as empty) when a graph page's markdown file cannot be read for contradiction checks, structural lint emits a `missing_page_file` finding when a page exists in the graph but has no file on disk, and `SWARMVAULT_DEBUG=1` prints the full stack and `cause` chain behind a CLI error.
+- Added CJK (Chinese/Japanese/Korean) full-text search: the FTS5 index uses the `trigram` tokenizer and the shared tokenizer keeps contiguous CJK runs together, so `search_pages` returns results for CJK queries that previously matched nothing. The index rebuilds automatically on the next compile.
+- Bumped OSS packages, viewer, Obsidian plugin metadata, MCP-facing version, ClawHub skill metadata, and desktop package metadata to `3.21.0`.
+
 ## 3.20.0
 
 - Added declaration line ranges to code symbols: the TypeScript/JavaScript analyzer records `startLine`/`endLine` for functions, classes, and variables, the ranges travel through `CodeSymbol` onto graph symbol nodes, and `graph callers` scans only each caller's own declaration range so call sites are attributed to the correct caller even when several callers share a file. Symbols without ranges (other languages, older graphs) keep the previous per-file behavior.
